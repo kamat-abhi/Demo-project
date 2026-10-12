@@ -1,0 +1,11 @@
+@model WebApplication2.Models.Client
+@{ ViewData["Title"] = "Client"; }
+<h3 class="mt-4">@(Model.ClientId == 0 ? "Add" : "Edit") Client</h3>
+<form asp-action="@(Model.ClientId == 0 ? "Create" : "Edit")" method="post" class="col-md-7">
+    <input type="hidden" asp-for="ClientId" />
+    <div class="mb-3"><label asp-for="Name" class="form-label"></label><input asp-for="Name" class="form-control" /><span asp-validation-for="Name" class="text-danger"></span></div>
+    <div class="mb-3"><label asp-for="Address" class="form-label"></label><textarea asp-for="Address" rows="2" class="form-control"></textarea><span asp-validation-for="Address" class="text-danger"></span></div>
+    <div class="mb-3"><label asp-for="Gstin" class="form-label">GSTIN (optional)</label><input asp-for="Gstin" class="form-control" /></div>
+    <div class="form-check"><input asp-for="IsActive" class="form-check-input" /><label asp-for="IsActive" class="form-check-label">Active</label></div>
+    <partial name="_FormButtons" />
+</form>

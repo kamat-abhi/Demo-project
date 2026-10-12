@@ -1,0 +1,9 @@
+@* usage: <partial name="_MasterHeader" /> ; needs ViewBag.Heading *@
+<div class="d-flex justify-content-between align-items-center mt-4 mb-3">
+    <h3 class="m-0">@ViewBag.Heading</h3>
+    <a class="btn btn-primary" asp-action="Create">+ Add New</a>
+</div>
+@if (TempData["Msg"] != null)
+{
+    <div class="alert alert-success py-2">@TempData["Msg"]</div>
+}

@@ -1,7 +1,14 @@
+using Microsoft.EntityFrameworkCore;
+using WebApplication2.Data;
 var builder = WebApplication.CreateBuilder(args);
+
+
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+builder.Services.AddDbContext<BillingDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("BillingConnection")));
 
 var app = builder.Build();
 

@@ -230,14 +230,25 @@
                 </button>
                 <div class="collapse navbar-collapse" id="mtNav">
                     <ul class="navbar-nav ms-md-4 me-auto mt-2 mt-md-0">
+                        @{
+                            var ctrl = (ViewContext.RouteData.Values["controller"]?.ToString() ?? "").ToLower();
+                        }
                         <li class="nav-item">
-                            <a class="nav-link @(action == "index" ? "active" : "")" asp-controller="Bill" asp-action="Index">All Bills</a>
+                            <a class="nav-link @(ctrl == "bill" && action != "create" ? "active" : "")" asp-controller="Bill" asp-action="Index">All Bills</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link @(action == "sslinvoice" ? "active" : "")" asp-controller="Bill" asp-action="SslInvoice">SSL Invoice</a>
+                            <a class="nav-link @(ctrl == "bill" && action == "create" ? "active" : "")" asp-controller="Bill" asp-action="Create">New Bill</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link @(action == "hardoibill" ? "active" : "")" asp-controller="Bill" asp-action="HardoiBill">Hardoi Bill</a>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Masters</a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" asp-controller="Clients" asp-action="Index">Clients</a></li>
+                                <li><a class="dropdown-item" asp-controller="Depots" asp-action="Index">Depots</a></li>
+                                <li><a class="dropdown-item" asp-controller="Services" asp-action="Index">Services / Items</a></li>
+                                <li><a class="dropdown-item" asp-controller="Terms" asp-action="Index">Terms &amp; Conditions</a></li>
+                                <li><hr class="dropdown-divider" /></li>
+                                <li><a class="dropdown-item" asp-controller="Companies" asp-action="Index">Company</a></li>
+                            </ul>
                         </li>
                     </ul>
                     <a class="mt-contact d-none d-lg-inline" href="mailto:info@mectoi.in">&#9993; info@mectoi.in</a>
@@ -264,8 +275,7 @@
                     <h6>Bills</h6>
                     <ul>
                         <li><a asp-controller="Bill" asp-action="Index">All Bills</a></li>
-                        <li><a asp-controller="Bill" asp-action="SslInvoice">SSL Invoice</a></li>
-                        <li><a asp-controller="Bill" asp-action="HardoiBill">Hardoi Bill</a></li>
+                        <li><a asp-controller="Bill" asp-action="Create">New Bill</a></li>
                     </ul>
                 </div>
                 <div class="col-6 col-md-4">

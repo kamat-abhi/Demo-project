@@ -224,7 +224,7 @@
     <div class="bl-grid" id="blGrid">
         @foreach (var b in Model.OrderByDescending(x => x.Date))
         {
-            <a class="bl-card @b.Accent" asp-action="@b.Action" data-search="@((b.Title + " " + b.Kind + " " + b.BillNo + " " + b.Client).ToLower())">
+            <a class="bl-card @b.Accent" asp-action="Details" asp-route-id="@b.Id" data-search="@((b.Title + " " + b.Kind + " " + b.BillNo + " " + b.Client).ToLower())">
                 <div class="strip"></div>
                 <div class="body">
                     <span class="bl-kind">@b.Kind</span>

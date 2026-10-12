@@ -1,0 +1,9 @@
+@model WebApplication2.Models.Term
+@{ ViewData["Title"] = "Term"; }
+<h3 class="mt-4">@(Model.TermId == 0 ? "Add" : "Edit") Term</h3>
+<form asp-action="@(Model.TermId == 0 ? "Create" : "Edit")" method="post" class="col-md-7">
+    <input type="hidden" asp-for="TermId" />
+    <div class="mb-3"><label asp-for="Text" class="form-label"></label><textarea asp-for="Text" rows="3" class="form-control"></textarea><span asp-validation-for="Text" class="text-danger"></span></div>
+    <div class="form-check"><input asp-for="IsActive" class="form-check-input" /><label asp-for="IsActive" class="form-check-label">Active</label></div>
+    <partial name="_FormButtons" />
+</form>

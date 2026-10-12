@@ -63,6 +63,7 @@ namespace WebApplication2.Models
 
     public class BillListItem
     {
+        public int Id { get; set; }
         public string Action { get; set; }
         public string Kind { get; set; }
         public string Title { get; set; }

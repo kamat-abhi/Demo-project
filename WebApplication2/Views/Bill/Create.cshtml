@@ -1,0 +1,282 @@
+@model WebApplication2.Models.BillCreateViewModel
+@{
+    ViewData["Title"] = "New Bill";
+}
+<h3 class="mt-4 mb-3">Create Bill</h3>
+
+<form asp-action="Create" method="post" id="billForm">
+    <div asp-validation-summary="All" class="alert alert-danger py-2"></div>
+
+    <div class="card mb-3"><div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-3">
+                <label asp-for="BillType" class="form-label">Bill type</label>
+                <select asp-for="BillType" id="BillType" class="form-select">
+                    <option value="GST">GST Tax Invoice</option>
+                    <option value="DEPOT">Depot-wise Monthly Bill</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label asp-for="BillNo" class="form-label">Bill No.</label>
+                <input asp-for="BillNo" id="BillNo" class="form-control" />
+            </div>
+            <div class="col-md-3">
+                <label asp-for="BillDate" class="form-label">Bill date</label>
+                <input asp-for="BillDate" id="BillDate" type="date" class="form-control" />
+            </div>
+            <div class="col-md-3">
+                <label asp-for="Title" class="form-label">Heading on bill</label>
+                <input asp-for="Title" id="Title" class="form-control" />
+            </div>
+
+            <div class="col-md-3">
+                <label asp-for="CompanyId" class="form-label">Company (seller)</label>
+                <select asp-for="CompanyId" class="form-select"
+                        asp-items="@(new SelectList(Model.Companies, "CompanyId", "Name"))"><option value="0">-- select --</option></select>
+            </div>
+            <div class="col-md-5">
+                <label asp-for="ClientId" class="form-label">Billed to</label>
+                <select asp-for="ClientId" id="ClientId" class="form-select"
+                        asp-items="@(new SelectList(Model.Clients.Select(c => new { c.ClientId, Text = c.Name + ", " + c.Address }), "ClientId", "Text"))"><option value="0">-- select client --</option></select>
+            </div>
+            <div class="col-md-4 gst-only">
+                <label asp-for="ShipToClientId" class="form-label">Shipped to (optional)</label>
+                <select asp-for="ShipToClientId" class="form-select"
+                        asp-items="@(new SelectList(Model.Clients.Select(c => new { c.ClientId, Text = c.Name + ", " + c.Address }), "ClientId", "Text"))"><option value="">-- same / none --</option></select>
+            </div>
+
+            <div class="col-md-4">
+                <label asp-for="OrderNo" class="form-label">Order / Reference No.</label>
+                <input asp-for="OrderNo" class="form-control" />
+            </div>
+            <div class="col-md-3">
+                <label asp-for="OrderDate" class="form-label">Order date</label>
+                <input asp-for="OrderDate" type="date" class="form-control" />
+            </div>
+            <div class="col-md-3 gst-only">
+                <label asp-for="CopyType" class="form-label">Copy type</label>
+                <select asp-for="CopyType" class="form-select">
+                    <option value="">-- none --</option>
+                    <option>Original Copy</option>
+                    <option>Duplicate Copy</option>
+                    <option>Triplicate Copy</option>
+                </select>
+            </div>
+            <div class="col-md-1">
+                <label asp-for="CgstRate" class="form-label">CGST %</label>
+                <input asp-for="CgstRate" id="CgstRate" type="number" step="0.01" class="form-control" />
+            </div>
+            <div class="col-md-1">
+                <label asp-for="SgstRate" class="form-label">SGST %</label>
+                <input asp-for="SgstRate" id="SgstRate" type="number" step="0.01" class="form-control" />
+            </div>
+        </div>
+    </div></div>
+
+    <div class="card mb-3"><div class="card-body">
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-2 gap-2">
+            <h5 class="m-0">Line items</h5>
+            <div class="d-flex gap-2 align-items-center">
+                <span class="depot-only d-flex gap-2 align-items-center">
+                    <select id="bulkService" class="form-select form-select-sm" style="width:220px"></select>
+                    <button type="button" id="addAllDepots" class="btn btn-sm btn-outline-success text-nowrap">+ Add all depots of client</button>
+                </span>
+                <button type="button" id="addRow" class="btn btn-sm btn-outline-primary">+ Add row</button>
+            </div>
+        </div>
+        <div class="table-responsive">
+        <table class="table table-sm align-middle" id="lines">
+            <thead class="table-light">
+                <tr>
+                    <th style="width:18%">Service</th>
+                    <th class="depot-only" style="width:16%">Depot</th>
+                    <th>Description</th>
+                    <th style="width:9%">HSN/SAC</th>
+                    <th style="width:8%">Qty</th>
+                    <th style="width:11%">Rate</th>
+                    <th style="width:11%" class="text-end">Amount</th>
+                    <th style="width:4%"></th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        </div>
+
+        <div class="row justify-content-end"><div class="col-md-4">
+            <table class="table table-sm mb-0">
+                <tr><td>Sub total</td><td class="text-end" id="tSub">0.00</td></tr>
+                <tr><td>CGST</td><td class="text-end" id="tCgst">0.00</td></tr>
+                <tr><td>SGST</td><td class="text-end" id="tSgst">0.00</td></tr>
+                <tr><td>Grand total</td><td class="text-end" id="tGrand">0.00</td></tr>
+                <tr class="fw-bold table-light"><td>Payable (rounded)</td><td class="text-end" id="tRound">0.00</td></tr>
+            </table>
+            <div class="form-text">Amount in words is generated automatically when you save.</div>
+        </div></div>
+    </div></div>
+
+    <div class="card mb-3"><div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-8">
+                <h6>Terms &amp; conditions</h6>
+                @if (!Model.TermMaster.Any()) { <div class="text-muted">No terms in master yet.</div> }
+                @foreach (var t in Model.TermMaster)
+                {
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="SelectedTermIds" value="@t.TermId" id="term@(t.TermId)"
+                               @(Model.SelectedTermIds.Contains(t.TermId) ? "checked" : "") />
+                        <label class="form-check-label" for="term@(t.TermId)">@t.Text</label>
+                    </div>
+                }
+            </div>
+            <div class="col-md-4">
+                <label asp-for="SignatoryName" class="form-label">Signatory name</label>
+                <input asp-for="SignatoryName" class="form-control" />
+            </div>
+        </div>
+    </div></div>
+
+    <button type="submit" class="btn btn-primary">Save &amp; View Bill</button>
+    <a class="btn btn-outline-secondary" asp-action="Index">Cancel</a>
+</form>
+
+<template id="rowTpl">
+    <tr>
+        <td><select class="form-select form-select-sm" data-f="ServiceId"><option value="">-- custom --</option></select></td>
+        <td class="depot-only"><select class="form-select form-select-sm" data-f="DepotId"></select></td>
+        <td><input class="form-control form-control-sm" data-f="Description" /></td>
+        <td><input class="form-control form-control-sm" data-f="HsnCode" /></td>
+        <td><input class="form-control form-control-sm" type="number" step="0.01" min="0" data-f="Quantity" /></td>
+        <td><input class="form-control form-control-sm" type="number" step="0.01" min="0" data-f="Rate" /></td>
+        <td class="text-end amt">0.00</td>
+        <td><button type="button" class="btn btn-sm btn-outline-danger rm" title="Remove">&times;</button></td>
+    </tr>
+</template>
+
+@section Scripts {
+<script>
+    const services = @Json.Serialize(Model.ServiceMaster.Select(s => new { id = s.ServiceId, desc = s.Description, hsn = s.HsnCode, rate = s.DefaultRate }));
+    const initialLines = @Json.Serialize(Model.Lines);
+    let depots = [];
+
+    const el = id => document.getElementById(id);
+    const tbody = document.querySelector('#lines tbody');
+    const tpl = el('rowTpl');
+    const money = n => n.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const r2 = n => Math.round((n + Number.EPSILON) * 100) / 100;
+    let billNoDirty = el('BillNo').value !== '';
+    let titleDirty = el('Title').value !== '';
+
+    function fillDepots(sel, selected) {
+        const keep = selected !== undefined && selected !== null ? String(selected) : sel.value;
+        sel.innerHTML = '';
+        sel.add(new Option('-- depot --', ''));
+        depots.forEach(d => sel.add(new Option(d.name, d.id)));
+        sel.value = keep;
+    }
+
+    function addRow(d) {
+        d = d || {};
+        const tr = tpl.content.firstElementChild.cloneNode(true);
+        const q = f => tr.querySelector('[data-f="' + f + '"]');
+        const sel = q('ServiceId');
+        services.forEach(s => sel.add(new Option(s.desc.length > 40 ? s.desc.slice(0, 40) + '...' : s.desc, s.id)));
+        sel.value = d.serviceId != null ? d.serviceId : '';
+        q('Description').value = d.description || '';
+        q('HsnCode').value = d.hsnCode || '';
+        q('Quantity').value = d.quantity != null ? d.quantity : 1;
+        q('Rate').value = d.rate != null ? d.rate : 0;
+        fillDepots(q('DepotId'), d.depotId);
+
+        sel.addEventListener('change', () => {
+            const s = services.find(x => String(x.id) === sel.value);
+            if (s) { q('Description').value = s.desc; q('HsnCode').value = s.hsn || ''; q('Rate').value = s.rate; recalc(); }
+        });
+        tr.addEventListener('input', recalc);
+        tr.querySelector('.rm').addEventListener('click', () => { tr.remove(); recalc(); });
+        tbody.appendChild(tr);
+        applyType();
+        recalc();
+        return tr;
+    }
+
+    function recalc() {
+        let sub = 0;
+        tbody.querySelectorAll('tr').forEach(tr => {
+            const qty = parseFloat(tr.querySelector('[data-f="Quantity"]').value) || 0;
+            const rate = parseFloat(tr.querySelector('[data-f="Rate"]').value) || 0;
+            const amt = qty * rate;
+            tr.querySelector('.amt').textContent = money(amt);
+            sub += amt;
+        });
+        const cg = r2(sub * (parseFloat(el('CgstRate').value) || 0) / 100);
+        const sg = r2(sub * (parseFloat(el('SgstRate').value) || 0) / 100);
+        const grand = sub + cg + sg;
+        el('tSub').textContent = money(sub);
+        el('tCgst').textContent = money(cg);
+        el('tSgst').textContent = money(sg);
+        el('tGrand').textContent = money(grand);
+        el('tRound').textContent = money(el('BillType').value === 'GST' ? Math.round(grand) : grand);
+    }
+
+    function monthTitle() {
+        const d = new Date(el('BillDate').value || Date.now());
+        d.setMonth(d.getMonth() - 1); // monthly bill is usually for the previous month
+        return 'Bill (' + d.toLocaleString('en-GB', { month: 'long' }) + ' - ' + d.getFullYear() + ')';
+    }
+
+    function applyType() {
+        const isGst = el('BillType').value === 'GST';
+        document.querySelectorAll('.gst-only').forEach(e => e.classList.toggle('d-none', !isGst));
+        document.querySelectorAll('.depot-only').forEach(e => e.classList.toggle('d-none', isGst));
+        tbody.querySelectorAll('[data-f="DepotId"]').forEach(s => s.disabled = isGst);   // disabled = not posted
+        if (!titleDirty) el('Title').value = isGst ? 'Invoice' : monthTitle();
+    }
+
+    async function loadNo() {
+        if (billNoDirty) return;
+        const r = await fetch('@Url.Action("NextNo", "Bill")?date=' + encodeURIComponent(el('BillDate').value));
+        if (r.ok) el('BillNo').value = (await r.json()).billNo;
+    }
+
+    async function loadDepots() {
+        const id = el('ClientId').value;
+        depots = id && id !== '0' ? await (await fetch('@Url.Action("ClientDepots", "Bill")?clientId=' + id)).json() : [];
+        tbody.querySelectorAll('[data-f="DepotId"]').forEach(s => fillDepots(s));
+    }
+
+    el('BillNo').addEventListener('input', () => billNoDirty = true);
+    el('Title').addEventListener('input', () => titleDirty = true);
+    el('BillDate').addEventListener('change', () => { loadNo(); applyType(); });
+    el('BillType').addEventListener('change', applyType);
+    el('BillType').addEventListener('change', recalc);
+    el('ClientId').addEventListener('change', loadDepots);
+    el('CgstRate').addEventListener('input', recalc);
+    el('SgstRate').addEventListener('input', recalc);
+    el('addRow').addEventListener('click', () => addRow());
+
+    // bulk service list + "add all depots"
+    const bulk = el('bulkService');
+    services.forEach(s => bulk.add(new Option(s.desc.length > 30 ? s.desc.slice(0, 30) + '...' : s.desc, s.id)));
+    el('addAllDepots').addEventListener('click', () => {
+        if (!depots.length) { alert('Select a client that has depots first.'); return; }
+        const s = services.find(x => String(x.id) === bulk.value) || { id: null, desc: '', hsn: '', rate: 0 };
+        // drop empty rows first
+        tbody.querySelectorAll('tr').forEach(tr => { if (!tr.querySelector('[data-f="Description"]').value.trim()) tr.remove(); });
+        depots.forEach(d => addRow({ serviceId: s.id, depotId: d.id, description: s.desc, hsnCode: s.hsn, quantity: 1, rate: s.rate }));
+    });
+
+    // number the inputs Lines[0].Field ... right before submit
+    el('billForm').addEventListener('submit', () => {
+        tbody.querySelectorAll('tr').forEach((tr, i) =>
+            tr.querySelectorAll('[data-f]').forEach(inp => inp.name = 'Lines[' + i + '].' + inp.dataset.f));
+    });
+
+    // init
+    (async () => {
+        await loadDepots();
+        (initialLines.length ? initialLines : [{}]).forEach(addRow);
+        applyType();
+        loadNo();
+    })();
+</script>
+}

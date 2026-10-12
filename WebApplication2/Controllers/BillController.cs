@@ -1,110 +1,109 @@
-using System;
-using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using WebApplication2.Data;
 using WebApplication2.Models;
 
 namespace WebApplication2.Controllers
 {
-    public class BillController : Controller
+    public partial class BillController : Controller
     {
-        public IActionResult Index()
+        private readonly BillingDbContext _db;
+        public BillController(BillingDbContext db) { _db = db; }
+
+        // /Bill  -> list of all bills from database
+        public async Task<IActionResult> Index()
         {
-            var items = new List<BillListItem>();
-            var ssl = BuildSsl();
-            items.Add(new BillListItem
+
+            var bills = await _db.Bills
+                .Include(b => b.Client)
+                .Include(b => b.Items)
+                .OrderByDescending(b => b.BillDate).ThenByDescending(b => b.BillId)
+                .ToListAsync();
+
+            var items = bills.Select(b => new BillListItem
             {
-                Action = "SslInvoice",
-                Kind = "GST Tax Invoice",
-                Title = "SSL Certificate",
-                BillNo = ssl.BillNo,
-                Date = ssl.BillDate,
-                Client = ssl.BilledToName + ", " + ssl.BilledToAddress,
-                Total = ssl.RoundedTotal,
-                Lines = ssl.Items.Count,
-                Accent = "blue"
-            });
-            var h = BuildHardoi();
-            items.Add(new BillListItem
-            {
-                Action = "HardoiBill",
-                Kind = "Monthly Bill",
-                Title = h.Title,
-                BillNo = h.BillNo,
-                Date = h.BillDate,
-                Client = h.BilledToName + ", " + h.BilledToAddress,
-                Total = h.GrandTotal,
-                Lines = h.Items.Count,
-                Accent = "green"
-            });
+
+                Id = b.BillId,
+                Kind = b.BillType == "GST" ? "GST Tax Invoice" : "Monthly Bill",
+                Title = b.Title,
+                BillNo = b.BillNo,
+                Date = b.BillDate,
+                Client = b.Client.Name + ", " + b.Client.Address,
+                Total = b.BillType == "GST" ? (b.RoundedTotal ?? 0m) : (b.GrandTotal ?? 0m),
+                Lines = b.Items.Count,
+                Accent = b.BillType == "GST" ? "blue" : "green"
+            }).ToList();
+
             return View(items);
         }
 
-        public IActionResult SslInvoice() { return View(BuildSsl()); }
-        public IActionResult HardoiBill() { return View(BuildHardoi()); }
-
-        // /Bill/SslInvoice
-        private BillViewModel BuildSsl()
+        // /Bill/Details/5 -> picks the right layout by BillType
+        public async Task<IActionResult> Details(int id)
         {
-            var model = new BillViewModel
-            {
-                CompanyAddress = "5/552, Sector-5, Gomati Nagar Extension, Lucknow",
-                CompanyEmail = "info@mectoi.in",
-                Gstin = "09ABBFM2085K1Z1",
-                CopyType = "Original Copy",
-                BillNo = "MT/26-27/PB1",
-                BillDate = new DateTime(2026, 10, 3),
-                OrderNo = "524/ ूरो/िव० ०/2026/ई-मेल",
-                OrderDate = new DateTime(2026, 9, 22),
-                BilledToName = "Director General",
-                BilledToAddress = "Bureau of Public Enterprises, Uttar Pradesh, Lucknow",
-                ShippedToName = "Director General",
-                ShippedToAddress = "Bureau of Public Enterprises, Uttar Pradesh, Lucknow",
-                AmountInWords = "Rupees Eight Thousand Nine Hundred Sixty Eight Only.",
-                BankAccountNo = "083305500634",
-                BankName = "ICICI",
-                Ifsc = "ICIC0000833",
-                Branch = "Naka Hindola, Lucknow",
-                Pan = "ABBFM2085K",
-                SignatoryName = "Authorised Signatory",
-                StampUrl = "~/img/1.png"
-            };
-            model.Items.Add(new BillItem
-            {
-                Description = "SSL for the domain \"https://sarvjanikudyam.up.nic.in\"",
-                HsnCode = "998319",
-                Quantity = 1,
-                Rate = 7600
-            });
-            model.Terms.Add("E. & O.E.");
-            model.Terms.Add("Goods once sold will not be taken back.");
-            model.Terms.Add("Subject to 'Uttar Pradesh' jurisdiction only.");
-            return model;
+            var bill = await _db.Bills
+                .Include(b => b.Company)
+                .Include(b => b.Client)
+                .Include(b => b.ShipToClient)
+                .Include(b => b.Items).ThenInclude(i => i.Depot)
+                .Include(b => b.Terms)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(b => b.BillId == id);
+
+            if (bill == null) return NotFound();
+
+            var vm = MapToViewModel(bill);
+            return View(bill.BillType == "GST" ? "SslInvoice" : "HardoiBill", vm);
         }
 
-        // /Bill/HardoiBill  -> depot-wise bill (green design)
-        private BillViewModel BuildHardoi()
+        // Entity -> the same BillViewModel your views already use
+        private static BillViewModel MapToViewModel(Bill b)
         {
-            var model = new BillViewModel
+            var vm = new BillViewModel
             {
-                Title = "Bill (April - 2025)",
-                CompanyAddress = "Plot No 1355, Ram Vihar Colony, Osho Nagar, P.O: Manak Nagar, Pincode-226011, Lucknow (U.P.)",
-                CompanyPhone = "+91-9455520949, 9369350321",
-                CompanyEmail = "info@mectoi.in",
-                BillNo = "2526/HDI/2",
-                BillDate = new DateTime(2025, 5, 3),
-                OrderNo = "राके0मु0अ0/15-01के0मु0अ0/15",
-                OrderDate = new DateTime(2015, 2, 2),
-                BilledToName = "The Regional Manager",
-                BilledToAddress = "Hardoi Region U.P.S.R.T.C",
-                AmountInWords = "Four thousand seven hundred twenty only",
-                SignatoryName = "Manish (Authorized Signatory)"
+                CompanyName = b.Company.Name,
+                CompanyAddress = b.Company.Address,
+                CompanyPhone = b.Company.Phone,
+                CompanyEmail = b.Company.Email,
+                Gstin = b.Company.Gstin,
+                Pan = b.Company.Pan,
+                BankName = b.Company.BankName,
+                BankAccountNo = b.Company.BankAccountNo,
+                Ifsc = b.Company.Ifsc,
+                Branch = b.Company.Branch,
+                StampUrl = b.Company.StampUrl,
+
+                Title = b.Title,
+                CopyType = b.CopyType,
+                BillNo = b.BillNo,
+                BillDate = b.BillDate,
+                OrderNo = b.OrderNo,
+                OrderDate = b.OrderDate,
+
+                BilledToName = b.Client.Name,
+                BilledToAddress = b.Client.Address,
+                ShippedToName = b.ShipToClient?.Name,
+                ShippedToAddress = b.ShipToClient?.Address,
+
+                CgstRate = b.CgstRate ?? 0m,
+                SgstRate = b.SgstRate ?? 0m,
+                AmountInWords = b.AmountInWords,
+                SignatoryName = b.SignatoryName
             };
-            string[] depots = { "HARDOI DEPOT", "KANNAUJ DEPOT", "LAKHIMPUR DEPOT", "RM OFFICE HARDOI",
-                                "SHAHJAHANPUR DEPOT", "SITAPUR DEPOT", "SM OFFICE HARDOI", "GOLA DEPOT" };
-            foreach (var d in depots)
-                model.Items.Add(new BillItem { Description = "On line Payroll Management System Software", Depot = d, Quantity = 1, Rate = 500 });
-            model.Terms.Add("100% payment has to be made by RTGS/NEFT to representative of Mectoi Technologies, Lucknow.");
-            return model;
+
+            foreach (var i in b.Items)
+                vm.Items.Add(new BillItem
+                {
+                    Description = i.Description,
+                    HsnCode = i.HsnCode,
+                    Depot = i.Depot?.Name,
+                    Quantity = i.Quantity,
+                    Rate = i.Rate
+                });
+
+            foreach (var t in b.Terms) vm.Terms.Add(t.Text);
+            return vm;
         }
     }
 }
