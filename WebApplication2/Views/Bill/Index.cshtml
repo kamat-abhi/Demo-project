@@ -1,0 +1,265 @@
+﻿@model List<WebApplication2.Models.BillListItem>
+@using System.Globalization
+@{
+    ViewData["Title"] = "All Bills";
+    var inr = new CultureInfo("en-IN");
+    decimal grand = Model.Sum(b => b.Total);
+}
+@section Styles {
+    <style>
+        .bl-hero {
+            background: linear-gradient(120deg, #0f1f5c, #1e3a8a 55%, #2563eb);
+            color: #fff;
+            border-radius: 18px;
+            padding: 2rem 2rem 4rem;
+            margin-top: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+            .bl-hero::after {
+                content: "";
+                position: absolute;
+                right: -60px;
+                top: -60px;
+                width: 260px;
+                height: 260px;
+                border-radius: 50%;
+                background: rgba(255,255,255,.08);
+            }
+
+            .bl-hero h1 {
+                font-weight: 700;
+                font-size: 1.9rem;
+                margin: 0 0 .25rem;
+            }
+
+            .bl-hero p {
+                margin: 0;
+                opacity: .85;
+            }
+
+        .bl-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: -2.6rem 1.25rem 1.5rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .bl-stat {
+            background: #fff;
+            border-radius: 14px;
+            padding: 1rem 1.2rem;
+            box-shadow: 0 8px 24px rgba(15,31,92,.12);
+        }
+
+            .bl-stat small {
+                display: block;
+                color: #64748b;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                font-size: .68rem;
+                font-weight: 600;
+            }
+
+            .bl-stat strong {
+                font-size: 1.5rem;
+                color: #0f1f5c;
+            }
+
+        .bl-bar {
+            display: flex;
+            gap: .75rem;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+            .bl-bar input {
+                max-width: 320px;
+                border-radius: 999px;
+                padding: .5rem 1rem;
+            }
+
+        .bl-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.25rem;
+        }
+
+        .bl-card {
+            background: #fff;
+            border-radius: 16px;
+            border: 1px solid #e5e7eb;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: transform .2s, box-shadow .2s;
+            text-decoration: none;
+            color: inherit;
+        }
+
+            .bl-card:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 14px 32px rgba(15,31,92,.15);
+                color: inherit;
+            }
+
+            .bl-card .strip {
+                height: 8px;
+            }
+
+            .bl-card.blue .strip {
+                background: linear-gradient(90deg, #1e3a8a, #3b82f6);
+            }
+
+            .bl-card.green .strip {
+                background: linear-gradient(90deg, #065f46, #10b981);
+            }
+
+            .bl-card .body {
+                padding: 1.1rem 1.3rem;
+                flex: 1;
+            }
+
+        .bl-kind {
+            display: inline-block;
+            font-size: .68rem;
+            font-weight: 700;
+            letter-spacing: .8px;
+            text-transform: uppercase;
+            padding: .2rem .7rem;
+            border-radius: 999px;
+        }
+
+        .blue .bl-kind {
+            background: #eaf0ff;
+            color: #1e3a8a;
+        }
+
+        .green .bl-kind {
+            background: #e6f9f0;
+            color: #065f46;
+        }
+
+        .bl-card h3 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin: .7rem 0 .2rem;
+        }
+
+        .bl-meta {
+            color: #64748b;
+            font-size: .85rem;
+        }
+
+        .bl-row {
+            display: flex;
+            justify-content: space-between;
+            margin-top: .9rem;
+            padding-top: .8rem;
+            border-top: 1px dashed #e5e7eb;
+            align-items: end;
+        }
+
+        .bl-amt {
+            font-size: 1.35rem;
+            font-weight: 700;
+        }
+
+        .blue .bl-amt {
+            color: #1e3a8a;
+        }
+
+        .green .bl-amt {
+            color: #065f46;
+        }
+
+        .bl-card .foot {
+            background: #f8fafc;
+            padding: .7rem 1.3rem;
+            font-weight: 600;
+            font-size: .85rem;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .blue .foot {
+            color: #1e3a8a;
+        }
+
+        .green .foot {
+            color: #065f46;
+        }
+
+        .bl-empty {
+            display: none;
+            text-align: center;
+            color: #64748b;
+            padding: 2rem;
+        }
+    </style>
+}
+
+<div class="bl-hero">
+    <h1>Bills &amp; Invoices</h1>
+    <p>Mectoi Technologies &mdash; open, print or save any bill as PDF.</p>
+</div>
+
+<div class="bl-stats">
+    <div class="bl-stat"><small>Total bills</small><strong>@Model.Count</strong></div>
+    <div class="bl-stat"><small>Total billed</small><strong>₹ @(grand.ToString("N2", inr))</strong></div>
+    <div class="bl-stat"><small>Latest bill</small><strong>@(Model.Max(b => b.Date).ToString("dd MMM yyyy"))</strong></div>
+</div>
+
+<div class="container-fluid px-3 px-md-4">
+    <div class="bl-bar">
+        <h5 class="m-0">All bills</h5>
+        <input id="blSearch" type="search" class="form-control" placeholder="Search bill no, client, type..." />
+    </div>
+
+    <div class="bl-grid" id="blGrid">
+        @foreach (var b in Model.OrderByDescending(x => x.Date))
+        {
+            <a class="bl-card @b.Accent" asp-action="@b.Action" data-search="@((b.Title + " " + b.Kind + " " + b.BillNo + " " + b.Client).ToLower())">
+                <div class="strip"></div>
+                <div class="body">
+                    <span class="bl-kind">@b.Kind</span>
+                    <h3>@b.Title</h3>
+                    <div class="bl-meta">Bill No: <b>@b.BillNo</b></div>
+                    <div class="bl-meta">@b.Client</div>
+                    <div class="bl-row">
+                        <div>
+                            <div class="bl-meta">@b.Date.ToString("dd MMM yyyy") &middot; @b.Lines @(b.Lines == 1 ? "item" : "items")</div>
+                        </div>
+                        <div class="bl-amt">₹ @(b.Total.ToString("N2", inr))</div>
+                    </div>
+                </div>
+                <div class="foot"><span>View / Print bill</span><span>&rarr;</span></div>
+            </a>
+        }
+    </div>
+    <div class="bl-empty" id="blEmpty">No bills match your search.</div>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            var q = document.getElementById('blSearch');
+            var cards = document.querySelectorAll('#blGrid .bl-card');
+            var empty = document.getElementById('blEmpty');
+            q.addEventListener('input', function () {
+                var t = q.value.trim().toLowerCase(), shown = 0;
+                cards.forEach(function (c) {
+                    var ok = c.getAttribute('data-search').indexOf(t) !== -1;
+                    c.style.display = ok ? '' : 'none';
+                    if (ok) shown++;
+                });
+                empty.style.display = shown ? 'none' : 'block';
+            });
+        })();
+    </script>
+}

@@ -1,0 +1,317 @@
+﻿@{
+    var action = (ViewContext.RouteData.Values["action"]?.ToString() ?? "").ToLower();
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Mectoi Technologies</title>
+    <script type="importmap"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/WebApplication2.styles.css" asp-append-version="true" />
+    <style>
+            html {
+                position: static;
+                min-height: 0;
+                height: auto;
+            }
+
+            body {
+                font-family: 'Inter', Segoe UI, Arial, sans-serif;
+                margin: 0 !important;
+                display: flex;
+                flex-direction: column;
+                min-height: 100vh;
+            }
+
+            main[role="main"] {
+                flex: 1 0 auto;
+            }
+
+            .mt-footer {
+                position: static !important;
+                width: 100%;
+                line-height: 1.5 !important;
+                white-space: normal !important;
+                flex-shrink: 0;
+                order: 99;
+            }
+
+            /* ---------- Navbar ---------- */
+            .mt-nav {
+                background: linear-gradient(90deg, #0f1f5c, #1e3a8a 60%, #2563eb);
+                box-shadow: 0 4px 18px rgba(15,31,92,.25);
+                padding: .55rem 0;
+                position: sticky;
+                top: 0;
+                z-index: 1030;
+            }
+
+            .mt-brand {
+                display: flex;
+                align-items: center;
+                gap: .65rem;
+                color: #fff !important;
+                text-decoration: none;
+                font-weight: 700;
+                font-size: 1.15rem;
+                letter-spacing: .3px;
+            }
+
+            .mt-logo {
+                width: 38px;
+                height: 38px;
+                border-radius: 10px;
+                background: #fff;
+                color: #1e3a8a;
+                display: grid;
+                place-items: center;
+                font-weight: 800;
+                font-size: 1.2rem;
+                box-shadow: 0 2px 8px rgba(0,0,0,.2);
+            }
+
+            .mt-brand small {
+                display: block;
+                font-weight: 500;
+                font-size: .65rem;
+                letter-spacing: 1.6px;
+                text-transform: uppercase;
+                opacity: .75;
+                line-height: 1;
+                margin-top: 2px;
+            }
+
+            .mt-nav .nav-link {
+                color: rgba(255,255,255,.82) !important;
+                font-weight: 500;
+                padding: .5rem 1rem !important;
+                border-radius: 8px;
+                transition: all .2s;
+            }
+
+                .mt-nav .nav-link:hover {
+                    color: #fff !important;
+                    background: rgba(255,255,255,.12);
+                }
+
+                .mt-nav .nav-link.active {
+                    color: #fff !important;
+                    background: rgba(255,255,255,.2);
+                    box-shadow: inset 0 -2px 0 #fbbf24;
+                }
+
+            .mt-nav .navbar-toggler {
+                border-color: rgba(255,255,255,.5);
+            }
+
+            .mt-nav .navbar-toggler-icon {
+                filter: invert(1);
+            }
+
+            .mt-contact {
+                color: #fff;
+                font-size: .82rem;
+                opacity: .9;
+                text-decoration: none;
+            }
+
+                .mt-contact:hover {
+                    color: #fbbf24;
+                }
+
+            /* ---------- Footer ---------- */
+            .mt-footer {
+                background: #0f1f5c;
+                color: rgba(255,255,255,.78);
+                margin-top: 2rem;
+                font-size: .88rem;
+            }
+
+                .mt-footer::before {
+                    content: "";
+                    display: block;
+                    height: 4px;
+                    background: linear-gradient(90deg, #fbbf24, #2563eb, #10b981);
+                }
+
+                .mt-footer h6 {
+                    color: #fff;
+                    text-transform: uppercase;
+                    letter-spacing: 1.2px;
+                    font-size: .75rem;
+                    font-weight: 700;
+                    margin-bottom: .75rem;
+                }
+
+                .mt-footer a {
+                    color: rgba(255,255,255,.78);
+                    text-decoration: none;
+                }
+
+                    .mt-footer a:hover {
+                        color: #fbbf24;
+                    }
+
+                .mt-footer .brandline {
+                    color: #fff;
+                    font-weight: 700;
+                    font-size: 1.1rem;
+                }
+
+                .mt-footer .copy {
+                    border-top: 1px solid rgba(255,255,255,.15);
+                    font-size: .8rem;
+                }
+
+                .mt-footer ul {
+                    list-style: none;
+                    padding: 0;
+                    margin: 0;
+                }
+
+                .mt-footer li {
+                    margin-bottom: .35rem;
+                }
+
+            /* ---------- Print: exactly one A4 page ---------- */
+            @@page {
+                size: A4;
+                margin: 0;
+            }
+
+            @@media print {
+                html, body {
+                    display: block !important;
+                    height: auto !important;
+                    min-height: 0 !important;
+                    margin: 0 !important;
+                    padding: 0 !important;
+                    background: #fff !important;
+                }
+
+                main[role="main"], .container, .container-fluid {
+                    padding: 0 !important;
+                    margin: 0 !important;
+                    max-width: none !important;
+                }
+
+                [data-a4] {
+                    zoom: 1 !important;
+                    margin: 0 !important;
+                    width: 210mm !important;
+                    height: 296mm !important;
+                    min-height: 0 !important;
+                    overflow: hidden !important;
+                    break-inside: avoid;
+                    break-after: avoid;
+                    page-break-after: avoid;
+                    box-shadow: none !important;
+                }
+            }
+    </style>
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+    <header class="d-print-none">
+        <nav class="navbar navbar-expand-md mt-nav">
+            <div class="container-fluid px-3 px-md-4">
+                <a class="mt-brand" asp-controller="Bill" asp-action="Index">
+                    <span class="mt-logo">M</span>
+                    <span>Mectoi Technologies<small>Software &amp; IT Services</small></span>
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mtNav" aria-controls="mtNav"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="mtNav">
+                    <ul class="navbar-nav ms-md-4 me-auto mt-2 mt-md-0">
+                        <li class="nav-item">
+                            <a class="nav-link @(action == "index" ? "active" : "")" asp-controller="Bill" asp-action="Index">All Bills</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(action == "sslinvoice" ? "active" : "")" asp-controller="Bill" asp-action="SslInvoice">SSL Invoice</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(action == "hardoibill" ? "active" : "")" asp-controller="Bill" asp-action="HardoiBill">Hardoi Bill</a>
+                        </li>
+                    </ul>
+                    <a class="mt-contact d-none d-lg-inline" href="mailto:info@mectoi.in">&#9993; info@mectoi.in</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    @* Bill pages set ViewData["FullWidth"] = true so the A4 sheet isn't squeezed by Bootstrap's .container *@
+    <div class="@(ViewData["FullWidth"] is true ? "container-fluid px-0" : "container")">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="mt-footer d-print-none">
+        <div class="container py-4">
+            <div class="row g-4">
+                <div class="col-md-5">
+                    <div class="brandline mb-2">Mectoi Technologies</div>
+                    <p class="mb-0">Plot No 1355, Ram Vihar Colony, Osho Nagar,<br />P.O: Manak Nagar, Lucknow (U.P.) - 226011</p>
+                </div>
+                <div class="col-6 col-md-3">
+                    <h6>Bills</h6>
+                    <ul>
+                        <li><a asp-controller="Bill" asp-action="Index">All Bills</a></li>
+                        <li><a asp-controller="Bill" asp-action="SslInvoice">SSL Invoice</a></li>
+                        <li><a asp-controller="Bill" asp-action="HardoiBill">Hardoi Bill</a></li>
+                    </ul>
+                </div>
+                <div class="col-6 col-md-4">
+                    <h6>Contact</h6>
+                    <ul>
+                        <li>&#9993; <a href="mailto:info@mectoi.in">info@mectoi.in</a></li>
+                        <li>&#9742; <a href="tel:+919455520949">+91-9455520949</a>, <a href="tel:+919369350321">9369350321</a></li>
+                        <li>GSTIN: 09ABBFM2085K1Z1</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copy text-center pt-3 mt-4">&copy; @DateTime.Now.Year Mectoi Technologies. All rights reserved.</div>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script>
+            (function () {
+                var sheet = document.querySelector('[data-a4]');
+                if (!sheet) return;
+                var toolbar = document.querySelector('.toolbar');
+                var fit = true, btn = null;
+                function apply() {
+                    sheet.style.zoom = 1; if (toolbar) toolbar.style.zoom = 1;
+                    if (!fit) return;
+                    var header = document.querySelector('header');
+                    var top = (header ? header.offsetHeight : 0) + (toolbar ? toolbar.offsetHeight + 16 : 0);
+                    var s = Math.min((window.innerHeight - top - 24) / sheet.offsetHeight, (window.innerWidth - 16) / sheet.offsetWidth, 1);
+                    if (s > 0.2) { sheet.style.zoom = s; if (toolbar) toolbar.style.zoom = s; }
+                }
+                if (toolbar) {
+                    btn = document.createElement('button');
+                    btn.type = 'button'; btn.className = 'btn'; btn.style.marginRight = '8px';
+                    btn.textContent = 'Actual size';
+                    btn.onclick = function () { fit = !fit; btn.textContent = fit ? 'Actual size' : 'Fit to screen'; apply(); };
+                    toolbar.insertBefore(btn, toolbar.firstChild);
+                }
+                window.addEventListener('resize', apply);
+                window.addEventListener('load', apply);
+                window.addEventListener('beforeprint', function () { sheet.style.zoom = 1; if (toolbar) toolbar.style.zoom = 1; });
+                window.addEventListener('afterprint', apply);
+                apply();
+            })();
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
